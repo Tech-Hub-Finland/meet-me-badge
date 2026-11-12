@@ -1,0 +1,355 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;padding:0}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>Meet Me Badge Maker</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@500;600&display=swap">
+<style>
+/* Layout: navy brand band, then the live badge on the left and three short steps on the right; stacks on phones. */
+:root{
+  --navy:#031E33; --ice:#A8C8EE; --white:#FFFFFF;
+  --bg:#F2F6FB; --surface:#FFFFFF; --ink:#0D2438; --ink-2:#4A6178; --line:#D8E2EE;
+  --accent:#1F5FBF; --accent-ink:#FFFFFF; --soft:#E6EEF8; --ok:#1E7A4C;
+  --f-body:"Inter",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+  --r:12px;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#04182A; --surface:#0A2740; --ink:#E7EFF8; --ink-2:#9FB4CA; --line:#1C3B57;
+  --accent:#A8C8EE; --accent-ink:#031E33; --soft:#123452; --ok:#7FD3A6; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#04182A; --surface:#0A2740; --ink:#E7EFF8; --ink-2:#9FB4CA; --line:#1C3B57;
+  --accent:#A8C8EE; --accent-ink:#031E33; --soft:#123452; --ok:#7FD3A6; color-scheme:dark}
+
+*{box-sizing:border-box}
+html,body{background:var(--bg)}
+body{color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.55}
+.wrap{max-width:1120px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+
+.band{background:var(--navy);color:var(--white)}
+.band .wrap{padding-block:22px 26px;display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:12px 24px}
+.lockup{height:56px;width:auto;display:block;margin-left:-14px}
+.band h1{margin:10px 0 0;font-size:clamp(24px,3.4vw,34px);font-weight:800;letter-spacing:-.025em;line-height:1.1;text-wrap:balance}
+.band p{margin:6px 0 0;color:#C9D6E6;max-width:56ch}
+.coord{font-family:var(--f-mono);font-size:12px;letter-spacing:.12em;color:var(--ice)}
+
+main .wrap{padding-block:28px 48px;display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);gap:28px;align-items:start}
+.stage{position:sticky;top:calc(env(safe-area-inset-top,0px) + 16px);display:grid;gap:10px;min-width:0}
+canvas{width:100%;max-width:100%;aspect-ratio:1/1;height:auto;display:block;border-radius:6px;box-shadow:0 10px 30px rgba(3,30,51,.18);touch-action:none;cursor:default}
+canvas.can-drag{cursor:grab}
+canvas.dragging{cursor:grabbing}
+.hint{font-size:13px;color:var(--ink-2);margin:0}
+
+.steps{display:grid;gap:16px;min-width:0}
+.step{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:18px 20px;display:grid;gap:12px;min-width:0}
+.step h2{margin:0;font-size:16px;font-weight:700;display:flex;align-items:center;gap:10px}
+.num{font-family:var(--f-mono);font-size:12px;font-weight:600;width:24px;height:24px;border-radius:50%;display:inline-grid;place-items:center;background:var(--soft);color:var(--accent);flex:none}
+label.lbl{font-size:13px;font-weight:600;color:var(--ink-2);display:block;margin-bottom:4px}
+input[type=text]{font:inherit;width:100%;padding:10px 12px;border-radius:8px;border:1px solid var(--line);background:var(--bg);color:var(--ink)}
+input[type=text]:focus-visible,textarea:focus-visible,button:focus-visible,.drop:focus-within{outline:2px solid var(--accent);outline-offset:2px}
+.drop{border:1.5px dashed var(--line);border-radius:10px;padding:16px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;background:var(--bg)}
+.drop.over{border-color:var(--accent);background:var(--soft)}
+.drop span{font-size:13.5px;color:var(--ink-2);min-width:0}
+input[type=file]{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none}
+.row{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+input[type=range]{flex:1;min-width:140px;accent-color:var(--accent)}
+.btn{font:inherit;font-weight:700;font-size:14px;padding:10px 16px;border-radius:8px;border:1px solid var(--accent);background:var(--accent);color:var(--accent-ink);cursor:pointer}
+.btn.ghost{background:transparent;color:var(--accent)}
+.btn:disabled{opacity:.5;cursor:default}
+.btn.big{width:100%;padding:13px 16px;font-size:15px}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{font:inherit;font-size:13px;font-weight:600;padding:6px 12px;border-radius:999px;border:1px solid var(--line);background:var(--surface);color:var(--ink);cursor:pointer}
+.chip[aria-pressed="true"]{background:var(--navy);border-color:var(--navy);color:var(--white)}
+:root[data-theme="dark"] .chip[aria-pressed="true"]{background:var(--ice);border-color:var(--ice);color:var(--navy)}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .chip[aria-pressed="true"]{background:var(--ice);border-color:var(--ice);color:var(--navy)}}
+textarea{font:inherit;font-size:14px;width:100%;min-height:230px;padding:12px;border-radius:8px;border:1px solid var(--line);background:var(--bg);color:var(--ink);resize:vertical}
+.status{font-size:13px;color:var(--ok);min-height:1.2em;margin:0}
+.status.err{color:#C0392B}
+.saveimg{display:grid;gap:8px}
+.saveimg img{width:100%;border-radius:6px}
+.note{font-size:13px;color:var(--ink-2);margin:0}
+.foot .wrap{padding-block:0 28px;font-size:12.5px;color:var(--ink-2)}
+
+@media (max-width:860px){
+  main .wrap{grid-template-columns:1fr}
+  .stage{position:static}
+}
+@media (prefers-reduced-motion: reduce){*{transition:none!important}}
+</style>
+
+</head><body>
+<header class="band">
+  <div class="wrap">
+    <div>
+      <img class="lockup" src="lockup.jpg" alt="Tech Hub Finland, powered by Plug and Play">
+      <h1>Make your “Meet me at” badge</h1>
+      <p>Add your photo, name and role, download the image, and share it on LinkedIn with the caption below. It takes about a minute.</p>
+    </div>
+    <div class="coord">61.50°N 23.75°E · 10.12.2026</div>
+  </div>
+</header>
+
+<main>
+  <div class="wrap">
+    <section class="stage" aria-label="Badge preview">
+      <canvas id="badge" width="2160" height="2160" aria-label="Your Meet me at Tech Hub Finland Expo badge"></canvas>
+      <p class="hint" id="hint">Your badge updates as you type. After adding a photo, drag it inside the frame to position it.</p>
+    </section>
+
+    <div class="steps">
+      <section class="step">
+        <h2><span class="num">1</span>Add your photo</h2>
+        <label class="drop" id="drop" for="photo">
+          <button type="button" class="btn ghost" id="pick">Choose photo</button>
+          <span id="photoName">Or drop an image here. A square headshot works best.</span>
+          <input type="file" id="photo" accept="image/*">
+        </label>
+        <div class="row" id="zoomRow" hidden>
+          <label class="lbl" for="zoom" style="margin:0">Zoom</label>
+          <input type="range" id="zoom" min="1" max="3" step="0.01" value="1">
+          <button type="button" class="btn ghost" id="reset">Reset</button>
+        </div>
+      </section>
+
+      <section class="step">
+        <h2><span class="num">2</span>Your name and role</h2>
+        <div>
+          <label class="lbl" for="name">Name</label>
+          <input type="text" id="name" placeholder="Your Name" autocomplete="name" maxlength="40">
+        </div>
+        <div>
+          <label class="lbl" for="role">Role, Company</label>
+          <input type="text" id="role" placeholder="e.g. Program Associate, Plug and Play" autocomplete="organization-title" maxlength="60">
+          <p class="note" style="margin-top:6px">Use Title Case and your full company name.</p>
+        </div>
+      </section>
+
+      <section class="step">
+        <h2><span class="num">3</span>Download and share</h2>
+        <button type="button" class="btn big" id="download">Download badge</button>
+        <p class="status" id="dlStatus" role="status"></p>
+        <div class="saveimg" id="saveimg" hidden>
+          <p class="note">Right-click or long-press the image and choose “Save image”.</p>
+          <img id="saveImgEl" alt="Your finished badge">
+        </div>
+
+        <label class="lbl" for="caption">Your LinkedIn caption (edit it if you like)</label>
+        <textarea id="caption" aria-label="LinkedIn caption"></textarea>
+        <button type="button" class="btn" id="copy">Copy caption</button>
+        <p class="status" id="cpStatus" role="status"></p>
+        <p class="note">On LinkedIn, retype “@Tech Hub Finland” and pick the page from the list so the tag links.</p>
+      </section>
+    </div>
+  </div>
+</main>
+
+<footer class="foot"><div class="wrap">Tech Hub Finland Expo · Thu 10 Dec 2026 · 15:00–18:30 EET · Tampere · Register at luma.com/bkz94r4l</div></footer>
+
+<script>
+(() => {
+  const S = 2160;
+  const BOX = {x:1238, y:407, w:792, h:792};          // photo frame on the template
+  const NAME = {x:131, base:1414, size:107, max:1000}; // matches the template's "Your Name"
+  const ROLE = {x:131, base:1498, size:47, max:1000};
+  const cv = document.getElementById('badge'), ctx = cv.getContext('2d');
+  const $ = id => document.getElementById(id);
+  const bg = new Image(); let bgReady = false;
+  let photo = null, zoom = 1, ox = 0, oy = 0;
+
+  const captions = {
+    attendee:
+`I'll be at the Tech Hub Finland Expo in Tampere on 10 December, where industrial corporations, startups and investors meet to turn technology into real business impact.
+
+If you're working on Industrial AI, Advanced Manufacturing, Security & Defense, Autonomous Systems or Smart Infrastructure, let's meet there. 👋
+
+🗓️ Thu 10 Dec | 15:00–18:30 EET | Tampere
+🎟️ Register: luma.com/bkz94r4l
+
+@Tech Hub Finland #TechHubFinland #Tampere`,
+    founder:
+`We're pitching at the Tech Hub Finland Expo in Tampere on 10 December. 🚀
+
+Come find our booth to meet the team, see what we're building and talk pilots with industrial partners.
+
+🗓️ Thu 10 Dec | 15:00–18:30 EET | Tampere
+🎟️ Register: luma.com/bkz94r4l
+
+@Tech Hub Finland #TechHubFinland #Tampere`,
+    partner:
+`Proud to be part of the first Tech Hub Finland Expo. 🤝
+
+On 10 December, industrial corporations, startups, investors and researchers meet in Tampere to turn technology into business impact. See you there.
+
+🗓️ Thu 10 Dec | 15:00–18:30 EET | Tampere
+🎟️ Register: luma.com/bkz94r4l
+
+@Tech Hub Finland #TechHubFinland #Tampere`,
+    speaker:
+`I'm speaking at the Tech Hub Finland Expo in Tampere on 10 December. 🎤
+
+Join me and the people shaping industrial innovation in Finland for keynotes, startup pitches and networking at the startup booths.
+
+🗓️ Thu 10 Dec | 15:00–18:30 EET | Tampere
+🎟️ Register: luma.com/bkz94r4l
+
+@Tech Hub Finland #TechHubFinland #Tampere`
+  };
+
+  function fitFont(text, weight, size, max){
+    let s = size;
+    ctx.font = `${weight} ${s}px Inter, system-ui, sans-serif`;
+    while (ctx.measureText(text).width > max && s > size*0.5){ s -= 2; ctx.font = `${weight} ${s}px Inter, system-ui, sans-serif`; }
+    return s;
+  }
+
+  function spaced(text, x, y, sp, right){
+    const ws = [...text].map(c => ctx.measureText(c).width);
+    const total = ws.reduce((a,b) => a+b, 0) + sp*(ws.length-1);
+    let cx = right ? x - total : x;
+    [...text].forEach((c,i) => { ctx.fillText(c, cx, y); cx += ws[i] + sp; });
+    return cx - sp;
+  }
+
+  function initOffset(){
+    zoom = 1; ox = 0; oy = 0;
+    const r = Math.max(BOX.w/photo.width, BOX.h/photo.height);
+    const my = (photo.height*r - BOX.h)/2;
+    oy = my * 0.6; // portraits: favour the top, where faces usually are
+  }
+
+  function coverRect(){
+    const r = Math.max(BOX.w/photo.width, BOX.h/photo.height) * zoom;
+    const w = photo.width*r, h = photo.height*r;
+    // clamp offsets so the photo always fills the frame
+    const mx = (w-BOX.w)/2, my = (h-BOX.h)/2;
+    ox = Math.max(-mx, Math.min(mx, ox)); oy = Math.max(-my, Math.min(my, oy));
+    return {x: BOX.x + (BOX.w-w)/2 + ox, y: BOX.y + (BOX.h-h)/2 + oy, w, h};
+  }
+
+  function draw(){
+    ctx.fillStyle = '#031E33'; ctx.fillRect(0,0,S,S);
+    if (bgReady) ctx.drawImage(bg,0,0,S,S);
+    if (photo){
+      const r = coverRect();
+      ctx.save(); ctx.beginPath(); ctx.rect(BOX.x,BOX.y,BOX.w,BOX.h); ctx.clip();
+      ctx.drawImage(photo, r.x, r.y, r.w, r.h); ctx.restore();
+    }
+    const name = $('name').value.trim() || 'Your Name';
+    const role = $('role').value.trim() || 'Your role, Company';
+    ctx.textBaseline = 'alphabetic'; ctx.textAlign = 'left';
+    ctx.fillStyle = '#FFFFFF'; fitFont(name, 700, NAME.size, NAME.max);
+    ctx.fillText(name, NAME.x, NAME.base);
+    ctx.fillStyle = 'rgb(201,214,230)'; fitFont(role, 400, ROLE.size, ROLE.max);
+    ctx.fillText(role, ROLE.x, ROLE.base);
+    // Tampere coordinates
+    ctx.fillStyle = '#A8C8EE';
+    ctx.font = '600 34px Inter, system-ui, sans-serif';
+    spaced('61.50°N 23.75°E', 2030, 1300, 5, true);
+    $('saveimg').hidden = true;
+  }
+
+  bg.onload = () => { bgReady = true; draw(); };
+  bg.src = 'template-bg.jpg';
+  Promise.all([
+    document.fonts.load('700 107px Inter'), document.fonts.load('400 47px Inter'), document.fonts.load('600 34px Inter')
+  ]).catch(()=>{}).finally(draw);
+  draw();
+
+  // Photo input
+  function loadFile(f){
+    if (!f || !f.type.startsWith('image/')) { $('photoName').textContent = 'That file is not an image. Try a JPG or PNG.'; return; }
+    const url = URL.createObjectURL(f), img = new Image();
+    img.onload = () => {
+      photo = img; initOffset(); $('zoom').value = 1;
+      $('zoomRow').hidden = false; cv.classList.add('can-drag');
+      $('photoName').textContent = f.name; draw();
+    };
+    img.onerror = () => { $('photoName').textContent = 'This image could not be opened. Try a JPG or PNG.'; };
+    img.src = url;
+  }
+  $('pick').addEventListener('click', e => { e.preventDefault(); $('photo').click(); });
+  $('photo').addEventListener('change', e => loadFile(e.target.files[0]));
+  const drop = $('drop');
+  ['dragenter','dragover'].forEach(t => drop.addEventListener(t, e => { e.preventDefault(); drop.classList.add('over'); }));
+  ['dragleave','drop'].forEach(t => drop.addEventListener(t, e => { e.preventDefault(); drop.classList.remove('over'); }));
+  drop.addEventListener('drop', e => loadFile(e.dataTransfer.files[0]));
+  $('zoom').addEventListener('input', e => { zoom = +e.target.value; draw(); });
+  $('reset').addEventListener('click', () => { if (photo) initOffset(); $('zoom').value = 1; draw(); });
+
+  // Drag to position
+  let drag = null;
+  const toCanvas = e => { const b = cv.getBoundingClientRect(); return {x:(e.clientX-b.left)*S/b.width, y:(e.clientY-b.top)*S/b.height}; };
+  cv.addEventListener('pointerdown', e => {
+    if (!photo) return; const p = toCanvas(e);
+    if (p.x<BOX.x||p.x>BOX.x+BOX.w||p.y<BOX.y||p.y>BOX.y+BOX.h) return;
+    drag = {px:p.x, py:p.y, ox, oy}; cv.setPointerCapture(e.pointerId); cv.classList.add('dragging');
+  });
+  cv.addEventListener('pointermove', e => {
+    if (!drag) return; const p = toCanvas(e);
+    ox = drag.ox + (p.x-drag.px); oy = drag.oy + (p.y-drag.py); draw();
+  });
+  const end = () => { drag = null; cv.classList.remove('dragging'); };
+  cv.addEventListener('pointerup', end); cv.addEventListener('pointercancel', end);
+
+  $('name').addEventListener('input', draw);
+  $('role').addEventListener('input', draw);
+
+  // Captions
+  let variant = 'attendee';
+  const setCaption = v => { variant = v; $('caption').value = captions[v];
+    document.querySelectorAll('.chip').forEach(c => c.setAttribute('aria-pressed', c.dataset.v===v)); };
+  document.querySelectorAll('.chip').forEach(c => c.addEventListener('click', () => setCaption(c.dataset.v)));
+  setCaption('attendee');
+
+  $('copy').addEventListener('click', () => {
+    const t = $('caption').value, st = $('cpStatus'); st.classList.remove('err');
+    const fallback = () => { $('caption').focus(); $('caption').select(); st.textContent = 'Caption selected. Press Ctrl+C (or ⌘C) to copy.'; };
+    try {
+      navigator.clipboard.writeText(t).then(() => { st.textContent = 'Caption copied. Paste it into your LinkedIn post.'; }, fallback);
+    } catch(e){ fallback(); }
+  });
+
+  // Download
+  const fileName = () => {
+    const n = $('name').value.trim().toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
+    return `meet-me-at-tech-hub-finland${n?'-'+n:''}.png`;
+  };
+  function showSaveImage(){
+    $('saveImgEl').src = cv.toDataURL('image/png');
+    $('saveimg').hidden = false;
+  }
+  let downloads = null;
+  if (window.claude && window.claude.use) {
+    window.claude.use('downloads').then(d => { downloads = d; }).catch(() => {});
+  }
+  $('download').addEventListener('click', () => {
+    const st = $('dlStatus'); st.classList.remove('err'); st.textContent = '';
+    if (!downloads){
+      cv.toBlob(blob => {
+        if (!blob){ showSaveImage(); return; }
+        try {
+          const a = document.createElement('a');
+          a.href = URL.createObjectURL(blob); a.download = fileName();
+          document.body.appendChild(a); a.click(); a.remove();
+          setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+          st.textContent = 'Badge downloaded. Now copy the caption and post it.';
+        } catch(e){ showSaveImage(); }
+      }, 'image/png');
+      return;
+    }
+    cv.toBlob(blob => {
+      if (!blob){ showSaveImage(); return; }
+      downloads.save({filename: fileName(), data: blob}).then(
+        () => { st.textContent = 'Badge saved. Now copy the caption and post it.'; },
+        err => {
+          const c = err && err.code;
+          if (c === 'declined') st.textContent = 'Download cancelled.';
+          else if (c === 'rate_limited') { st.classList.add('err'); st.textContent = 'A download prompt is already open. Try again in a moment.'; }
+          else showSaveImage();
+        });
+    }, 'image/png');
+  });
+})();
+</script>
+
+</body></html>
