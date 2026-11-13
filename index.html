@@ -1,6 +1,11 @@
 <!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;padding:0}img{max-width:100%}[hidden]{display:none!important}</style>
-<title>Meet Me Badge Maker</title>
-<meta name="claude:viewport-fit-sides" content="cover">
+<title>Meet me at Tech Hub Finland Expo · Badge maker</title>
+<meta name="description" content="Make your Meet me at Tech Hub Finland Expo badge and share it on LinkedIn. Thu 10 Dec 2026, Tampere.">
+<meta property="og:title" content="Meet me at Tech Hub Finland Expo">
+<meta property="og:description" content="Make your badge and share it on LinkedIn. Thu 10 Dec 2026 · 15:00–18:30 EET · Tampere.">
+<meta property="og:image" content="template-bg.jpg">
+<meta property="og:type" content="website">
+<link rel="icon" href="lockup.jpg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@500;600&display=swap">
@@ -318,35 +323,17 @@ Join me and the people shaping industrial innovation in Finland for keynotes, st
     $('saveImgEl').src = cv.toDataURL('image/png');
     $('saveimg').hidden = false;
   }
-  let downloads = null;
-  if (window.claude && window.claude.use) {
-    window.claude.use('downloads').then(d => { downloads = d; }).catch(() => {});
-  }
   $('download').addEventListener('click', () => {
     const st = $('dlStatus'); st.classList.remove('err'); st.textContent = '';
-    if (!downloads){
-      cv.toBlob(blob => {
-        if (!blob){ showSaveImage(); return; }
-        try {
-          const a = document.createElement('a');
-          a.href = URL.createObjectURL(blob); a.download = fileName();
-          document.body.appendChild(a); a.click(); a.remove();
-          setTimeout(() => URL.revokeObjectURL(a.href), 4000);
-          st.textContent = 'Badge downloaded. Now copy the caption and post it.';
-        } catch(e){ showSaveImage(); }
-      }, 'image/png');
-      return;
-    }
     cv.toBlob(blob => {
       if (!blob){ showSaveImage(); return; }
-      downloads.save({filename: fileName(), data: blob}).then(
-        () => { st.textContent = 'Badge saved. Now copy the caption and post it.'; },
-        err => {
-          const c = err && err.code;
-          if (c === 'declined') st.textContent = 'Download cancelled.';
-          else if (c === 'rate_limited') { st.classList.add('err'); st.textContent = 'A download prompt is already open. Try again in a moment.'; }
-          else showSaveImage();
-        });
+      try {
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob); a.download = fileName();
+        document.body.appendChild(a); a.click(); a.remove();
+        setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+        st.textContent = 'Badge downloaded. Now copy the caption and post it.';
+      } catch(e){ showSaveImage(); }
     }, 'image/png');
   });
 })();
