@@ -1,8 +1,8 @@
 <!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;padding:0}img{max-width:100%}[hidden]{display:none!important}</style>
 <title>Meet me at Tech Hub Finland Expo · Badge maker</title>
-<meta name="description" content="Make your Meet me at Tech Hub Finland Expo badge and share it on LinkedIn. Thu 10 Dec 2026, Tampere.">
+<meta name="description" content="Make your Meet me at Tech Hub Finland Expo badge and share it on LinkedIn. Thu 10 Dec 2026, Technopolis, Tampere.">
 <meta property="og:title" content="Meet me at Tech Hub Finland Expo">
-<meta property="og:description" content="Make your badge and share it on LinkedIn. Thu 10 Dec 2026 · 15:00–18:30 EET · Tampere.">
+<meta property="og:description" content="Make your badge and share it on LinkedIn. Thu 10 Dec 2026 · 15:00–18:30 EET · Technopolis, Tampere.">
 <meta property="og:image" content="template-bg.jpg">
 <meta property="og:type" content="website">
 <link rel="icon" href="lockup.jpg">
@@ -148,7 +148,7 @@ textarea{font:inherit;font-size:14px;width:100%;min-height:230px;padding:12px;bo
   </div>
 </main>
 
-<footer class="foot"><div class="wrap">Tech Hub Finland Expo · Thu 10 Dec 2026 · 15:00–18:30 EET · Tampere · Register at luma.com/bkz94r4l</div></footer>
+<footer class="foot"><div class="wrap">Tech Hub Finland Expo · Thu 10 Dec 2026 · 15:00–18:30 EET · Technopolis, Tampere</div></footer>
 
 <script>
 (() => {
@@ -156,6 +156,7 @@ textarea{font:inherit;font-size:14px;width:100%;min-height:230px;padding:12px;bo
   const BOX = {x:1238, y:407, w:792, h:792};          // photo frame on the template
   const NAME = {x:131, base:1414, size:107, max:1000}; // matches the template's "Your Name"
   const ROLE = {x:131, base:1498, size:47, max:1000};
+  const PLACE = {text:'Technopolis, Tampere', x:1448, base:1785, size:60, max:560};
   const cv = document.getElementById('badge'), ctx = cv.getContext('2d');
   const $ = id => document.getElementById(id);
   const bg = new Image(); let bgReady = false;
@@ -167,8 +168,7 @@ textarea{font:inherit;font-size:14px;width:100%;min-height:230px;padding:12px;bo
 
 If you're working on Industrial AI, Advanced Manufacturing, Security & Defense, Autonomous Systems or Smart Infrastructure, let's meet there. 👋
 
-🗓️ Thu 10 Dec | 15:00–18:30 EET | Tampere
-🎟️ Register: luma.com/bkz94r4l
+🗓️ Thu 10 Dec | 15:00–18:30 EET | Technopolis, Tampere
 
 @Tech Hub Finland #TechHubFinland #Tampere`,
     founder:
@@ -176,8 +176,7 @@ If you're working on Industrial AI, Advanced Manufacturing, Security & Defense, 
 
 Come find our booth to meet the team, see what we're building and talk pilots with industrial partners.
 
-🗓️ Thu 10 Dec | 15:00–18:30 EET | Tampere
-🎟️ Register: luma.com/bkz94r4l
+🗓️ Thu 10 Dec | 15:00–18:30 EET | Technopolis, Tampere
 
 @Tech Hub Finland #TechHubFinland #Tampere`,
     partner:
@@ -185,8 +184,7 @@ Come find our booth to meet the team, see what we're building and talk pilots wi
 
 On 10 December, industrial corporations, startups, investors and researchers meet in Tampere to turn technology into business impact. See you there.
 
-🗓️ Thu 10 Dec | 15:00–18:30 EET | Tampere
-🎟️ Register: luma.com/bkz94r4l
+🗓️ Thu 10 Dec | 15:00–18:30 EET | Technopolis, Tampere
 
 @Tech Hub Finland #TechHubFinland #Tampere`,
     speaker:
@@ -194,8 +192,7 @@ On 10 December, industrial corporations, startups, investors and researchers mee
 
 Join me and the people shaping industrial innovation in Finland for keynotes, startup pitches and networking at the startup booths.
 
-🗓️ Thu 10 Dec | 15:00–18:30 EET | Tampere
-🎟️ Register: luma.com/bkz94r4l
+🗓️ Thu 10 Dec | 15:00–18:30 EET | Technopolis, Tampere
 
 @Tech Hub Finland #TechHubFinland #Tampere`
   };
@@ -234,6 +231,11 @@ Join me and the people shaping industrial innovation in Finland for keynotes, st
   function draw(){
     ctx.fillStyle = '#031E33'; ctx.fillRect(0,0,S,S);
     if (bgReady) ctx.drawImage(bg,0,0,S,S);
+    // PLACE: cover the template's baked-in "Tampere" and write the venue
+    ctx.fillStyle = 'rgb(12,40,62)'; ctx.fillRect(1440, 1732, 585, 76);
+    ctx.textBaseline = 'alphabetic'; ctx.textAlign = 'left'; ctx.fillStyle = '#FFFFFF';
+    fitFont(PLACE.text, 700, PLACE.size, PLACE.max);
+    ctx.fillText(PLACE.text, PLACE.x, PLACE.base);
     if (photo){
       const r = coverRect();
       ctx.save(); ctx.beginPath(); ctx.rect(BOX.x,BOX.y,BOX.w,BOX.h); ctx.clip();
@@ -256,7 +258,7 @@ Join me and the people shaping industrial innovation in Finland for keynotes, st
   bg.onload = () => { bgReady = true; draw(); };
   bg.src = 'template-bg.jpg';
   Promise.all([
-    document.fonts.load('700 107px Inter'), document.fonts.load('400 47px Inter'), document.fonts.load('600 34px Inter')
+    document.fonts.load('700 107px Inter'), document.fonts.load('400 47px Inter'), document.fonts.load('600 34px Inter'), document.fonts.load('700 60px Inter')
   ]).catch(()=>{}).finally(draw);
   draw();
 
